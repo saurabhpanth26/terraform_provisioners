@@ -7,6 +7,8 @@ data "terraform_remote_state" "network_details" {
   }
 }
 
+
+
 resource "aws_instance" "my_vm" {
   ami                    = "ami-06984ea821ac0a879"
   subnet_id              = data.terraform_remote_state.network_details.outputs.my_subnet
@@ -16,10 +18,21 @@ resource "aws_instance" "my_vm" {
   tags = {
     Name = "john.07-vm1"
   }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update",
+      "sudo apt install nginx -y",
+      "sudo systemctl start nginx"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file("/home/ubuntu/terraform_base/keys/john.07")
+      host        = self.public_ip
+    }
+  }
 }
-
-
-
 
 
 
